@@ -1,15 +1,8 @@
-from config.env import env, env_bool, env_list
+from config.env import env_bool, env_cast
 
-from .base import *  # noqa: F403
+from .deployment import *  # noqa: F403
 
 ENVIRONMENT = "production"
-DEBUG = False
-SECRET_KEY = env("DJANGO_SECRET_KEY", required=True)
-ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS")
-CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
-SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", True)
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = 31_536_000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_SECONDS = env_cast("DJANGO_SECURE_HSTS_SECONDS", int, 3600)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", False)
+SECURE_HSTS_PRELOAD = env_bool("DJANGO_SECURE_HSTS_PRELOAD", False)
