@@ -4,7 +4,7 @@ Read the [shared operating guide](../AGENTS.md) and the canonical [business rule
 
 Shared documentation exists only in ../docs/. Do not recreate a local copy. If this repository is checked out alone and those files are unavailable, obtain the canonical context before work that depends on it; do not reconstruct policy from assumptions.
 
-Task 1 foundation implementation is authorized as of 2026-09-19. Later domain behavior remains governed by the backlog and unresolved-decision gates.
+Task 1 is verified complete. Task 2 domain foundation implementation is authorized as of 2026-09-24. Later tasks remain governed by the backlog and unresolved-decision gates; reference activation alone never grants booking permission.
 
 Once authorized, follow the Django/DRF/PostgreSQL modular-monolith direction, backend-authoritative rules, transaction-safe stock changes, controlled migrations and idempotent finance/provider boundaries. Django Admin is the back office; enforce separate staff permissions for doorstep operations.
 
