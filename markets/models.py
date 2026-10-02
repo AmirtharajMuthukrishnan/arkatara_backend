@@ -11,6 +11,11 @@ from common.reference import CodedReferenceModel, ValidatedReferenceModel
 
 
 class Market(CodedReferenceModel):
+    """Represent cities as configured data so expansion does not require city branches.
+
+    Refs: BUSINESS_RULES.md R-10, R-13.
+    """
+
     country_code = models.CharField(
         max_length=2,
         validators=[RegexValidator(r"\A[A-Z]{2}\Z", "Use a two-letter uppercase country code.")],
@@ -20,12 +25,23 @@ class Market(CodedReferenceModel):
 
 
 class Hub(CodedReferenceModel):
+    """Keep operational stock pools in a market without selecting routing or ownership.
+
+    Refs: BUSINESS_RULES.md R-08; DECISIONS.md BD-08, BD-11.
+    """
+
     market = models.ForeignKey(Market, on_delete=models.PROTECT, related_name="hubs")
 
     immutable_fields = (*CodedReferenceModel.immutable_fields, "market_id")
 
 
 class ServiceArea(ValidatedReferenceModel):
+    """Represent reviewed postal coverage without supplying launch PIN codes or routes.
+
+    Coverage alone does not prove the stock, price or plan requirements for booking.
+    Refs: BUSINESS_RULES.md R-07, R-09, R-10; DECISIONS.md BD-08, BD-13.
+    """
+
     class Status(models.TextChoices):
         DRAFT = "DRAFT", "Draft"
         ACTIVE = "ACTIVE", "Active"

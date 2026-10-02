@@ -12,6 +12,11 @@ from markets.models import Market, ServiceArea
 
 
 def coverage_state(market: Market, *, country_code: str, postal_code: str, at=None) -> str:
+    """Report exact city coverage; conflicting rules have no implicit precedence.
+
+    This read contract neither sources stock from a hub nor authorizes a booking.
+    Refs: BUSINESS_RULES.md R-07, R-09; DECISIONS.md BD-08, BD-13.
+    """
     if market.status == ReferenceStatus.COMING_SOON:
         return "COMING_SOON"
     if market.status != ReferenceStatus.ACTIVE:
@@ -44,6 +49,7 @@ def category_eligibility_revision(*, market, material, category, at: datetime | 
 
     Scope dimensions are stable public identifiers. Future plan/mixed-material
     policy remains separate; this lookup only describes one category/material.
+    Refs: BUSINESS_RULES.md R-07, R-10; DECISIONS.md BD-03, BD-12, BD-13.
     """
     if any(item.status != ReferenceStatus.ACTIVE for item in (market, material, category)):
         raise ConfigurationUnavailable("Market, material and category must all be active.")

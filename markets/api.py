@@ -19,6 +19,11 @@ def reference_row(row):
 
 
 class ReferenceDataView(APIView):
+    """Expose active/coming-soon options without turning visibility into bookability.
+
+    Refs: BUSINESS_RULES.md R-09, R-13; DECISIONS.md D-17.
+    """
+
     authentication_classes = []
     permission_classes = [AllowAny]
 
@@ -84,6 +89,7 @@ class ServiceabilityView(APIView):
                     market, country_code=values["country_code"], postal_code=values["postal_code"]
                 ),
                 # Geographic coverage cannot establish price/stock/plan/visit readiness.
+                # Refs: BUSINESS_RULES.md R-07, R-09; DECISIONS.md D-17.
                 "bookable": False,
             }
         )

@@ -9,6 +9,8 @@ from common.models import TimeStampedModel
 
 
 class ReferenceStatus(models.TextChoices):
+    # Reference activation is one input to readiness, never booking permission.
+    # Refs: BUSINESS_RULES.md R-09, R-13; DECISIONS.md D-17.
     DRAFT = "DRAFT", "Draft"
     ACTIVE = "ACTIVE", "Active"
     COMING_SOON = "COMING_SOON", "Coming soon"
@@ -27,6 +29,12 @@ class ValidatedReferenceQuerySet(models.QuerySet):
 
 
 class ValidatedReferenceModel(TimeStampedModel):
+    """Keep referenced identities stable through validated, serialized normal writes.
+
+    These guards do not implement stock reservation or financial workflows.
+    Refs: BUSINESS_RULES.md R-11, R-28; DECISIONS.md D-17.
+    """
+
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
     objects = ValidatedReferenceQuerySet.as_manager()

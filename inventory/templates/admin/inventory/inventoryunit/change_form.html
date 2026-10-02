@@ -1,0 +1,6 @@
+{% extends "admin/change_form.html" %}
+{% block object-tools-items %}
+  {% if original.status == 'DRAFT' and can_receive_unit %}<li><a href="{% url 'admin:inventory_inventoryunit_receive' original.public_id %}">Record hub receipt</a></li>{% endif %}
+  {% if original.status == 'QC_PENDING' and can_inspect_unit %}<li><a href="{% url 'admin:inventory_inventoryunit_inspect' original.public_id %}">Record inspection</a></li>{% endif %}
+  {{ block.super }}
+{% endblock %}

@@ -54,6 +54,11 @@ def _catalogue(value) -> dict:
 
 
 def _tax_evidence(value) -> dict:
+    """Missing reviewed tax is explicitly unconfigured, never an inferred zero rate.
+
+    Recording supplied facts does not establish their legal/accounting approval.
+    Refs: BUSINESS_RULES.md R-27, R-31; DECISIONS.md CA-02.
+    """
     if not isinstance(value, dict):
         raise ValidationError("Tax evidence must explicitly identify its configuration state.")
     if value.get("state") == "UNCONFIGURED":
@@ -96,7 +101,12 @@ def _tax_evidence(value) -> dict:
 
 @dataclass(frozen=True, slots=True, init=False)
 class HistoricalPriceSnapshot:
-    """A versioned, validated value; no live model reference can rewrite its contents."""
+    """Freeze supplied price/tax facts independently of later catalogue edits.
+
+    This value contract does not persist a sale, commit a price or issue an invoice;
+    later transaction models must attach and protect the recorded snapshot.
+    Refs: BUSINESS_RULES.md R-27, R-28; DECISIONS.md BD-04, CA-02.
+    """
 
     _serialized: str
 

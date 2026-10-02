@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Imports create draft records only. Preview checks do not commit changes. Reselect the file after preview; applying always validates it again.</p>
+{% for kind, columns in headers.items %}<p><strong>{{ kind }}</strong>: {{ columns|join:"," }}</p>{% endfor %}
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+{{ form.as_p }}
+<button type="submit" name="operation" value="preview">Preview</button>
+<button type="submit" name="operation" value="apply">Apply draft import</button>
+</form>
+{% if preview %}
+<h2>Preview: {{ preview.row_count }} rows</h2>
+{% for error in preview.errors %}<p class="errornote">{{ error }}</p>{% empty %}<p>Rows passed preview validation.</p>{% endfor %}
+<table><tbody>{% for row in preview.rows %}<tr>{% for key, value in row.items %}<td>{{ key }}: {{ value }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>
+{% endif %}
+{% endblock %}

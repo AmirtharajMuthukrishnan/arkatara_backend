@@ -28,6 +28,8 @@ class LegalEntityAdmin(admin.ModelAdmin):
         return False
 
     def save_model(self, request, obj, form, change):
+        # Entity edits and their attribution must succeed or roll back together.
+        # Refs: BUSINESS_RULES.md R-30; DECISIONS.md BD-11.
         database = router.db_for_write(LegalEntity)
         with transaction.atomic(using=database):
             before = {}
@@ -78,6 +80,8 @@ class BusinessConfigurationAdmin(admin.ModelAdmin):
         return False
 
     def save_model(self, request, obj, form, change):
+        # Back-office access permits a draft proposal, not commercial activation.
+        # Refs: BUSINESS_RULES.md R-18, R-28, R-30; DECISIONS.md BD-02, BD-13.
         if change or obj.status != BusinessConfiguration.Status.DRAFT:
             raise PermissionDenied("Admin can only create draft configuration revisions.")
         database = router.db_for_write(BusinessConfiguration)

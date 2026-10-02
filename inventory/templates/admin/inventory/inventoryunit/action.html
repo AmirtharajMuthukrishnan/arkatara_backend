@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  {% if unit %}<p>Unit: {{ unit.public_id }} · {{ unit.variant.sku }} · {{ unit.hub.name }} · {{ unit.get_status_display }}</p>{% endif %}
+  {% if action == 'register' %}<p>Registration creates a draft identity. Record physical receipt and inspection separately.</p>{% endif %}
+  {% if action == 'receive' %}<p>Confirm the physical piece is at the displayed hub and record the receiving evidence.</p>{% endif %}
+  {% if action == 'inspect' %}<p>Record the observed outcome under the hub's approved inspection procedure.</p>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="submit-row"><input type="submit" value="Record observation" class="default"></div>
+  </form>
+{% endblock %}

@@ -18,11 +18,16 @@ class ConfigurationDefinition:
 
 
 # Names and units are technical contracts. No entry supplies a policy/default value.
+# Refs: BUSINESS_RULES.md R-07, R-28; DECISIONS.md BD-02, BD-13.
 CONFIGURATION_DEFINITIONS = {
     ("trials", "maximum-boxes"): ConfigurationDefinition(int, "BD-13"),
     ("cart", "expiry-seconds"): ConfigurationDefinition(int, "BD-13"),
     ("inventory", "reservation-timeout-seconds"): ConfigurationDefinition(int, "BD-02"),
     ("trials", "category-eligibility"): ConfigurationDefinition(bool, "BD-13"),
+    # Reviewed procedure documents are supplied explicitly, never seeded by onboarding.
+    # Refs: BUSINESS_RULES.md R-17, R-28; DECISIONS.md BD-09.
+    ("inventory", "receiving-procedure-reference"): ConfigurationDefinition(str, "BD-09"),
+    ("inventory", "qc-procedure-reference"): ConfigurationDefinition(str, "BD-09"),
 }
 
 
@@ -61,10 +66,16 @@ def validate_configuration_value(namespace: str, key: str, value: object) -> Non
         )
     # bool is an int subclass, but it must never be accepted as a duration/limit.
     if type(value) is not definition.value_type:
-        expected = "boolean" if definition.value_type is bool else "positive integer"
+        expected = {bool: "boolean", int: "positive integer", str: "nonblank procedure reference"}[
+            definition.value_type
+        ]
         raise ValidationError({"value": f"This setting requires a {expected}."})
     if definition.value_type is int and value <= 0:
         raise ValidationError({"value": "This setting requires a positive integer."})
+    if definition.value_type is str and (not value.strip() or value != value.strip()):
+        raise ValidationError(
+            {"value": "Use a nonblank procedure reference without outer whitespace."}
+        )
 
 
 def get_approved_configuration(
@@ -74,6 +85,7 @@ def get_approved_configuration(
 
     Callers supply their complete scope. There is no global fallback, latest-version
     winner, merging of dimensions, or interpretation of missing policy as a value.
+    Refs: BUSINESS_RULES.md R-07, R-28; DECISIONS.md BD-02, BD-13.
     """
     from compliance.models import BusinessConfiguration
 

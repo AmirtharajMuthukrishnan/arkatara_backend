@@ -1,0 +1,6 @@
+{% extends "admin/change_form.html" %}
+{% block object-tools-items %}
+{{ block.super }}
+{% if perms.catalog.view_productmedia and perms.catalog.view_product %}<li><a href="{% url 'admin:catalog_productmedia_download' original.pk %}">Download private media</a></li>{% endif %}
+{% if perms.catalog.change_productmedia and perms.catalog.view_product %}<li><a href="{% url 'admin:catalog_productmedia_metadata' original.pk %}">Edit metadata</a></li>{% endif %}
+{% endblock %}

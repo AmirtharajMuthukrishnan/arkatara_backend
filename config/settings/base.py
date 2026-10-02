@@ -95,11 +95,20 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# Media publication/provider/limits remain unset; local inspection requires explicit setup.
+# Refs: DECISIONS.md BD-15; INTEGRATIONS.md#object-storage--task-3.
+PRODUCT_MEDIA_STORAGE = env("PRODUCT_MEDIA_STORAGE", "UNCONFIGURED")
+PRODUCT_MEDIA_ROOT = env("PRODUCT_MEDIA_ROOT", "")
+PRODUCT_MEDIA_MAX_BYTES = env_cast("PRODUCT_MEDIA_MAX_BYTES", int, None)
+PRODUCT_MEDIA_ALLOWED_TYPES = env_list("PRODUCT_MEDIA_ALLOWED_TYPES", "")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = env_list("DJANGO_CORS_ALLOWED_ORIGINS", "http://localhost:3000")
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", "http://localhost:3000")
 
+# Authentication is the staff baseline; public reads opt out explicitly, while
+# later agent actions must additionally enforce assignment and action permissions.
+# Refs: BUSINESS_RULES.md R-18; DECISIONS.md D-14.
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",

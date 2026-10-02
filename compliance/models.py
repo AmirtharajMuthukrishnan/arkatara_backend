@@ -24,6 +24,13 @@ class ImmutableQuerySet(models.QuerySet):
 
 
 class LegalEntity(TimeStampedModel):
+    """Identify parties without inventing the actual operating or stock-owning entity.
+
+    Later transaction records must snapshot the applicable party; this mutable
+    reference cannot by itself preserve historical issuer details.
+    Refs: BUSINESS_RULES.md R-27; DECISIONS.md BD-11, CA-03, LR-02.
+    """
+
     class Status(models.TextChoices):
         DRAFT = "DRAFT", "Draft"
         ACTIVE = "ACTIVE", "Active"
@@ -55,6 +62,12 @@ class LegalEntity(TimeStampedModel):
 
 
 class BusinessConfiguration(TimeStampedModel):
+    """Append policy revisions so later commitments can retain their original evidence.
+
+    Typed values and approval fields do not supply approved production settings.
+    Refs: BUSINESS_RULES.md R-28; DECISIONS.md BD-02, BD-13.
+    """
+
     class Status(models.TextChoices):
         DRAFT = "DRAFT", "Draft"
         ACTIVE = "ACTIVE", "Active"
@@ -143,6 +156,12 @@ class BusinessConfiguration(TimeStampedModel):
 
 
 class AuditEvent(models.Model):
+    """Retain attributable change evidence instead of editing the account of an action.
+
+    Each privileged workflow must write its evidence in the same transaction.
+    Refs: BUSINESS_RULES.md R-30.
+    """
+
     event_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,

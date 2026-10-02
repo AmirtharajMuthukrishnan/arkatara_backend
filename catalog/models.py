@@ -11,6 +11,11 @@ class Material(CodedReferenceModel):
 
 
 class Purity(ValidatedReferenceModel):
+    """Keep a material's standard distinct without approving a Gold assortment.
+
+    Refs: BUSINESS_RULES.md R-11; DECISIONS.md BD-12.
+    """
+
     material = models.ForeignKey(Material, on_delete=models.PROTECT, related_name="purities")
     code = models.SlugField(max_length=64)
     name = models.CharField(max_length=200)
@@ -42,7 +47,10 @@ class Purity(ValidatedReferenceModel):
 
 
 class Category(CodedReferenceModel):
-    """Trial eligibility is an approved scoped BusinessConfiguration, not a default."""
+    """Trial eligibility requires scoped policy rather than following from existence.
+
+    Refs: BUSINESS_RULES.md R-07, R-10; DECISIONS.md BD-13.
+    """
 
 
 class Product(CodedReferenceModel):
@@ -50,6 +58,8 @@ class Product(CodedReferenceModel):
     description = models.TextField(blank=True)
 
     def validate_existing_identity(self, previous) -> None:
+        # Recategorizing a used design would retarget its recorded units/prices.
+        # Refs: BUSINESS_RULES.md R-11, R-28.
         super().validate_existing_identity(previous)
         if (
             self.category_id != previous.category_id
@@ -63,6 +73,12 @@ class Product(CodedReferenceModel):
 
 
 class ProductVariant(ValidatedReferenceModel):
+    """A selectable specification with an opaque SKU, separate from physical pieces.
+
+    Used definitions stay stable; historical transaction values still need snapshots.
+    Refs: BUSINESS_RULES.md R-11, R-15, R-28.
+    """
+
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="variants")
     material = models.ForeignKey(Material, on_delete=models.PROTECT, related_name="variants")
     purity = models.ForeignKey(
@@ -126,5 +142,8 @@ class ProductVariant(ValidatedReferenceModel):
         return self.sku
 
 
-# Keep the pricing implementation separate while registering its Django model.
+# Register separately organized catalogue models without importing workflow services.
+from catalog.import_batches import CSVImportBatch  # noqa: E402,F401
+from catalog.media import ProductMedia  # noqa: E402,F401
 from catalog.pricing import PriceRevision  # noqa: E402,F401
+from catalog.storefront_models import StorefrontPage  # noqa: E402,F401

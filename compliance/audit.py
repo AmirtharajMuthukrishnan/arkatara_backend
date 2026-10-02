@@ -21,6 +21,10 @@ def model_facts(instance, field_names: tuple[str, ...]) -> dict:
 def record_model_change(
     *, actor, instance, before: dict, after: dict, reason: str = ""
 ) -> AuditEvent:
+    """Record who changed which facts; the caller owns the atomic business change.
+
+    Refs: BUSINESS_RULES.md R-30.
+    """
     changes = {
         name: {"before": before.get(name), "after": value}
         for name, value in after.items()

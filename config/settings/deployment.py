@@ -14,6 +14,7 @@ if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
     raise EnvironmentConfigurationError("DJANGO_ALLOWED_HOSTS must list explicit deployment hosts.")
 
 # Do not inherit localhost database credentials or browser origins in a deployment.
+# Refs: DECISIONS.md D-14.
 for field, variable in {
     "NAME": "POSTGRES_DB",
     "USER": "POSTGRES_USER",

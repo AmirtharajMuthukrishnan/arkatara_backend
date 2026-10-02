@@ -12,6 +12,7 @@ from django.db.models import Q
 from compliance.models import ImmutableQuerySet
 
 # Storage capacity, not a currency exponent or a transaction rounding policy.
+# Refs: DECISIONS.md D-17, BD-04, CA-02.
 MAX_DIGITS = 24
 DECIMAL_PLACES = 6
 
@@ -120,7 +121,12 @@ class ExactDecimalField(models.DecimalField):
 
 
 class PriceRevision(models.Model):
-    """Immutable draft evidence; no current-price selector or activation workflow."""
+    """Preserve fixed/weight input proposals without approving a payable price.
+
+    Draft storage supplies neither a commercial formula nor a price-lock point;
+    current-price selection and activation remain later reviewed workflows.
+    Refs: BUSINESS_RULES.md R-12, R-28; DECISIONS.md BD-04, BD-12, CA-02.
+    """
 
     class Mode(models.TextChoices):
         FIXED = "FIXED", "Fixed"

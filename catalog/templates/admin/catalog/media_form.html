@@ -1,0 +1,8 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Product media stays private while the catalogue is being prepared.</p>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+{{ form.as_p }}
+<button type="submit">{{ submit_label }}</button>
+</form>
+{% endblock %}
