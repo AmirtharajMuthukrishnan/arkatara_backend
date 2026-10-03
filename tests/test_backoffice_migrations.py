@@ -20,7 +20,7 @@ DOWNGRADE_GUARD = ("inventory", "0004_operational_downgrade_guard")
 def migrate(targets):
     executor = MigrationExecutor(connection)
     executor.migrate(targets)
-    return executor.loader.project_state(targets).apps
+    return executor.loader.project_state([node for node in targets if node[1] is not None]).apps
 
 
 def reference_graph(apps):
@@ -76,8 +76,12 @@ def assert_movement_guard(movement_id):
 
 def test_task2_upgrade_preserves_draft_identity_without_invented_custody_or_history():
     restore = MigrationExecutor(connection).loader.graph.leaf_nodes()
+    # Transaction apps depend on later catalogue migrations, so an older catalogue
+    # target must also remove those dependants rather than request their latest state.
     task2 = [
-        ("catalog", "0003_price_history_guard")
+        (app, None)
+        if app in {"trials", "delivery"}
+        else ("catalog", "0003_price_history_guard")
         if app == "catalog"
         else TASK2_INVENTORY
         if app == "inventory"

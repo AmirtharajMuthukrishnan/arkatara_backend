@@ -4,7 +4,9 @@ Read the [shared operating guide](../AGENTS.md) and the canonical [business rule
 
 Shared documentation exists only in ../docs/. Do not recreate a local copy. If this repository is checked out alone and those files are unavailable, obtain the canonical context before work that depends on it; do not reconstruct policy from assumptions.
 
-Tasks 1–3 remain complete for their delivered authorized scope, with recorded CI/review/live gates intact. The owner's 2026-09-26 continuation authorizes Task 4 after the lightweight search-architecture review (D-20). Unresolved-decision gates still apply; reference activation alone never grants booking permission.
+Tasks 1–3 remain complete for their delivered scope. [D-26](../docs/DECISIONS.md#d-26--task-4-cross-app-model-completion) now scopes Task 4 to all agreed backend persistence, integrity, migrations and model/database tests; workflows/APIs/providers remain in later tasks. Use the [coverage matrix](../docs/DATA_MODEL.md#task-4-model-coverage). Original storefront 4.1–4.7 move to Task 5 without renumbering or removing evidence. Policy gates still apply; model completeness is not live readiness.
+
+Follow D-23–D-25 and R-33–R-38 for separate staff/customer identities, permanent unlinked guest checkout, historical ownership/snapshots and booking OTP before upfront payment. These are target requirements, not existing implemented flows; keep details canonical in root docs. Do not reset migration history for this scope update.
 
 Respect the owner's [frontend design gate](../AGENTS.md#frontend-design-gate) ([D-21](../docs/DECISIONS.md#d-21--frontend-visual-design-awaits-owner-input)). Authorized backend, API contracts and other design-independent work may continue; do not infer customer/staff screen design from backend requirements or require final presentation to verify independent backend behavior. Frontend presentation remains pending owner-provided approved designs.
 

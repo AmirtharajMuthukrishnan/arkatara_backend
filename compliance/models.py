@@ -7,6 +7,7 @@ from django.db.models import Q
 
 from common.models import TimeStampedModel
 from compliance.configuration import configuration_scope_key, validate_configuration_value
+from compliance.policies import PolicyDocumentRevision  # noqa: F401
 
 
 class ImmutableQuerySet(models.QuerySet):

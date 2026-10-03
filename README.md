@@ -2,6 +2,10 @@
 
 Django/DRF modular monolith for the ARKA TARA Try-at-Home jewellery platform.
 
+## Current implementation scope
+
+[Task 4](../docs/TASKS.md#4-cross-app-model-completion) now completes all agreed domain models, constraints/history protections, migrations and model/database tests. The [coverage matrix](../docs/DATA_MODEL.md#task-4-model-coverage) distinguishes existing foundations from pending work. Later tasks implement workflows, APIs and providers; no customer authentication/booking flow is delivered by this documentation update. D-23–D-25 specify separate StaffUser/CustomerAccount identities, permanent unlinked guest bookings and booking OTP before upfront payment. Retain applied migrations and historical evidence.
+
 ## Foundation versions
 
 - Python 3.13
@@ -25,7 +29,7 @@ Django settings are split into local, test, staging, and production. Only local 
 
 Staging and production require an externally supplied strong `DJANGO_SECRET_KEY`, an explicit `DJANGO_ALLOWED_HOSTS` list, and all five `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT` settings. They refuse missing values and disable DEBUG. Browser CORS/CSRF origins default to empty in these environments; supply the approved HTTPS origins when needed. Cookies are secure and HTTPS redirects are enabled. Keep separate databases, users and secrets for each environment.
 
-Production HSTS starts at one hour. Increase `DJANGO_SECURE_HSTS_SECONDS` after checking HTTPS deployment; `DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS` and `DJANGO_SECURE_HSTS_PRELOAD` require explicit opt-in after domain review. Trusted proxy handling, database transport, runtime process manager and deployment host remain to be selected and tested before a live release.
+Production HSTS starts at one hour. Increase `DJANGO_SECURE_HSTS_SECONDS` after checking HTTPS deployment; `DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS` and `DJANGO_SECURE_HSTS_PRELOAD` require explicit opt-in after domain review. Trusted proxy handling, database transport, runtime process settings and deployment hosts must be configured/tested under D-22's AWS direction before live release.
 
 ## Quality checks
 
@@ -43,7 +47,7 @@ For a local-only check using the `.env` connection instead, `uv run pytest --ds=
 
 The initial modules are accounts, catalog, markets, inventory, trials, delivery, payments, billing, notifications, compliance, and analytics. Cross-module writes belong in explicit application workflows as described in the canonical root documentation.
 
-Task 2 adds catalogue/location models, draft physical identities and price revisions, read-only reference APIs and the historical snapshot value contract. Task 3 adds the Admin, media, CSV and gated receiving/QC workflows described below. See the canonical [data model](../docs/DATA_MODEL.md) for semantics and remaining transaction work. Payments, messaging, trial/delivery and billing remain later tasks.
+Task 2 adds catalogue/location models, draft physical identities and price revisions, read-only reference APIs and the historical snapshot value contract. Task 3 adds the Admin, media, CSV and gated receiving/QC workflows below. Task 4 completes remaining persistence; payments, messaging, trial/delivery and billing workflows remain later tasks. See the canonical [data model](../docs/DATA_MODEL.md).
 
 ## Permissions and business configuration
 
@@ -63,7 +67,7 @@ Generate new migrations with `uv run python manage.py makemigrations`. Review th
 
 Task 2 adds six migrations across markets/catalog/inventory; apply them using the usual `uv run python manage.py migrate`. Separate seed migrations add only approved reference identities. Their reverse operations retain data, and reapplication preserves existing labels/statuses. The price-history trigger has reversible DDL. Reversing initial table migrations deletes domain data and is not a routine rollback strategy; prefer compatible code rollback or a reviewed forward correction. Task 1 migrations remain unchanged.
 
-Before deployment, the release owner must record the commit and migration plan, take a database backup, verify restoration on an isolated database, and validate the release in staging. Apply migrations once with a dedicated migration role, run system/deployment checks and smoke tests, and then start compatible application processes. A deployed runtime role should not own schema objects or have CREATE/DROP/TRUNCATE privileges over evidence tables. Hosting and deployment ownership remain unselected; these steps do not authorize provisioning.
+Before deployment, the release owner must record the commit and migration plan, take a database backup, verify restoration on an isolated database, and validate the release in staging. Apply migrations once with a dedicated migration role, run system/deployment checks and smoke tests, and then start compatible application processes. A deployed runtime role should not own schema objects or have CREATE/DROP/TRUNCATE privileges over evidence tables. D-22 selects AWS hosting direction; deployment ownership/provisioning remain pending and these steps do not authorize provisioning.
 
 On failure, stop further writes where required and preserve logs/evidence. Roll back application code only when it remains compatible with the schema. Prefer a reviewed forward migration for data changes; reverse schema migrations only after reviewing their data-loss implications. Never reset a shared database to resolve drift. Audit update/delete triggers protect ordinary SQL writes; database owners/superusers can bypass schema-level controls, so restricted runtime roles and backups remain necessary.
 
@@ -94,6 +98,8 @@ Product media defaults to disabled. For explicit local testing, set `PRODUCT_MED
 Upload through the Product media add screen with media-add/product-view permissions. Choose a role, description and reason; thumbnails need a same-product source. Media-view/product-view permissions control private attachment downloads. Metadata changes require media-change/product-view permissions and are audited. Retirement retains the original file. These are private drafts, with no customer URL. Structural validation is not full decoding or malware scanning; production publication needs the controls recorded in [INTEGRATIONS.md](../docs/INTEGRATIONS.md#object-storage--task-3).
 
 ## Task 4 storefront publication
+
+Historical heading: this records original storefront work, now carried into Task 5 under D-26. Current Task 4 is model completion; the description below is not evidence that its cross-app checklist is finished.
 
 Apply catalog migration `0006_storefrontpage` before using the public catalogue. It adds stable page identities and publication permissions without publishing existing products or changing stock. Reversing it removes page identities/content; preserve records and prefer a compatible code rollback or reviewed forward correction after use.
 
