@@ -213,6 +213,9 @@ class PriceRevision(models.Model):
 
         database = kwargs.get("using") or router.db_for_write(type(self), instance=self)
         with transaction.atomic(using=database):
+            from common.serialization import lock_integrity_writes
+
+            lock_integrity_writes(database)
             if self.variant_id:
                 variant = (
                     ProductVariant.objects.using(database)

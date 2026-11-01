@@ -12,6 +12,8 @@ from django.utils import timezone
 from common.reference import ValidatedReferenceModel, ValidatedReferenceQuerySet
 from compliance.models import ImmutableQuerySet
 
+from .reservations import InventoryReservation  # noqa: F401
+
 _operational_write = ContextVar("inventory_operational_write", default=False)
 
 
@@ -42,18 +44,23 @@ class InventoryUnit(ValidatedReferenceModel):
         DRAFT = "DRAFT", "Draft / not operationally available"
         QC_PENDING = "QC_PENDING", "Awaiting inspection"
         AVAILABLE = "AVAILABLE", "Available at hub"
+        OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY", "With assigned agent"
+        RETURNING_TO_HUB = "RETURNING_TO_HUB", "Returning to hub"
+        SOLD = "SOLD", "Sold"
         QUARANTINED = "QUARANTINED", "Quarantined"
         RETIRED = "RETIRED", "Retired"
 
     class Custody(models.TextChoices):
         UNKNOWN = "UNKNOWN", "Not physically verified"
         HUB = "HUB", "Verified at hub"
+        AGENT = "AGENT", "Assigned agent custody"
+        CUSTOMER = "CUSTOMER", "Purchased customer custody"
 
     variant = models.ForeignKey(
         "catalog.ProductVariant", on_delete=models.PROTECT, related_name="inventory_units"
     )
     hub = models.ForeignKey("markets.Hub", on_delete=models.PROTECT, related_name="inventory_units")
-    status = models.CharField(max_length=16, choices=Status.choices, default=Status.DRAFT)
+    status = models.CharField(max_length=24, choices=Status.choices, default=Status.DRAFT)
     custody = models.CharField(max_length=16, choices=Custody.choices, default=Custody.UNKNOWN)
 
     objects = InventoryUnitQuerySet.as_manager()
@@ -65,12 +72,21 @@ class InventoryUnit(ValidatedReferenceModel):
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(
-                    status__in=["DRAFT", "QC_PENDING", "AVAILABLE", "QUARANTINED", "RETIRED"]
+                    status__in=[
+                        "DRAFT",
+                        "QC_PENDING",
+                        "AVAILABLE",
+                        "QUARANTINED",
+                        "RETIRED",
+                        "OUT_FOR_DELIVERY",
+                        "RETURNING_TO_HUB",
+                        "SOLD",
+                    ]
                 ),
                 name="inventory_unit_status_valid",
             ),
             models.CheckConstraint(
-                condition=models.Q(custody__in=["UNKNOWN", "HUB"]),
+                condition=models.Q(custody__in=["UNKNOWN", "HUB", "AGENT", "CUSTOMER"]),
                 name="inventory_unit_custody_valid",
             ),
             models.CheckConstraint(

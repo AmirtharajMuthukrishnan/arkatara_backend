@@ -242,6 +242,9 @@ def apply_import(*, actor, kind, content, idempotency_key, reason):
         ).encode()
     ).hexdigest()
     with transaction.atomic():
+        from common.serialization import lock_integrity_writes
+
+        lock_integrity_writes("default")
         # Serialize bounded catalogue imports; Admin/model constraints still guard other writers.
         with connection.cursor() as cursor:
             cursor.execute("SELECT pg_advisory_xact_lock(%s)", [674805010304])

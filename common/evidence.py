@@ -49,6 +49,9 @@ class AppendOnlyModel(models.Model):
             raise ValidationError("Recorded evidence is append-only.")
         database = kwargs.get("using") or router.db_for_write(type(self), instance=self)
         with transaction.atomic(using=database):
+            from common.serialization import lock_integrity_writes
+
+            lock_integrity_writes(database)
             self.lock_related_records(database)
             self.full_clean()
             kwargs["using"] = database

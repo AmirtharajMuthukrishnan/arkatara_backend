@@ -24,6 +24,8 @@ CONFIGURATION_DEFINITIONS = {
     ("cart", "expiry-seconds"): ConfigurationDefinition(int, "BD-13"),
     ("inventory", "reservation-timeout-seconds"): ConfigurationDefinition(int, "BD-02"),
     ("trials", "category-eligibility"): ConfigurationDefinition(bool, "BD-13"),
+    ("trials", "plan-policy-reference"): ConfigurationDefinition(str, "BD-03"),
+    ("payments", "booking-charge-policy-reference"): ConfigurationDefinition(str, "BD-01"),
     # Reviewed procedure documents are supplied explicitly, never seeded by onboarding.
     # Refs: BUSINESS_RULES.md R-17, R-28; DECISIONS.md BD-09.
     ("inventory", "receiving-procedure-reference"): ConfigurationDefinition(str, "BD-09"),
@@ -33,6 +35,26 @@ CONFIGURATION_DEFINITIONS = {
 
 class ConfigurationUnavailable(RuntimeError):
     """The exact requested policy has no approved, effective revision."""
+
+
+def validate_policy_binding(revision, namespace, key, *, market, category=None, scope_version=2):
+    """Check semantic identity and explicit dimensions; approval is a later gate.
+
+    Version 2 uses public UUIDs, matching existing configuration contracts.
+    Version 1 preserves recorded code-based history; new owners must use version 2.
+    Global references remain global. No scope fallback or precedence is inferred.
+    Refs: BUSINESS_RULES.md R-07, R-28; DECISIONS.md BD-01, BD-03, BD-13.
+    """
+    if scope_version not in (1, 2):
+        raise ValidationError("Unknown policy scope identity version.")
+    dimensions = {"market": market.code if scope_version == 1 else str(market.public_id)}
+    if category is not None:
+        dimensions["category"] = category.code if scope_version == 1 else str(category.public_id)
+    if (revision.namespace, revision.key) != (namespace, key) or any(
+        dimension not in dimensions or not isinstance(value, str) or dimensions[dimension] != value
+        for dimension, value in revision.scope.items()
+    ):
+        raise ValidationError("Policy identity or scope does not match the obligation/offering.")
 
 
 class ConfigurationConflict(RuntimeError):

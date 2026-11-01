@@ -160,6 +160,9 @@ def register_unit(
         hub=str(hub.public_id),
     )
     with transaction.atomic():
+        from common.serialization import lock_integrity_writes
+
+        lock_integrity_writes("default")
         previous = _lock_request(key, fingerprint)
         if previous:
             return previous.unit
@@ -202,6 +205,9 @@ def _transition(
         unit=str(unit.public_id),
     )
     with transaction.atomic():
+        from common.serialization import lock_integrity_writes
+
+        lock_integrity_writes("default")
         previous = _lock_request(key, fingerprint)
         if previous:
             return previous

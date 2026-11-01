@@ -7,6 +7,8 @@ from django.db import models
 from common.evidence import RetainedModel
 from common.verification import validate_observed_at
 
+from .scope import StaffScopeGrant  # noqa: F401
+
 
 class StaffUser(AbstractUser):
     """Staff identity leaves guest browsing and booking free of a login requirement.

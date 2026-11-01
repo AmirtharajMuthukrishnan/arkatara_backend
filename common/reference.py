@@ -66,6 +66,9 @@ class ValidatedReferenceModel(TimeStampedModel):
     def save(self, *args, **kwargs):
         database = kwargs.get("using") or router.db_for_write(type(self), instance=self)
         with transaction.atomic(using=database):
+            from common.serialization import lock_integrity_writes
+
+            lock_integrity_writes(database)
             if not self._state.adding:
                 previous = type(self).objects.using(database).select_for_update().get(pk=self.pk)
                 self.validate_existing_identity(previous)

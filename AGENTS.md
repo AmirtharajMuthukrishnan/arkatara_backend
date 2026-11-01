@@ -4,6 +4,10 @@ Read the [shared operating guide](../AGENTS.md) and the canonical [business rule
 
 Shared documentation exists only in ../docs/. Do not recreate a local copy. If this repository is checked out alone and those files are unavailable, obtain the canonical context before work that depends on it; do not reconstruct policy from assumptions.
 
+Follow the shared [implementation and independent review workflow](../AGENTS.md#implementation-and-independent-review) and [D-28 finding/handoff requirements](../docs/DECISIONS.md#d-28--codex-implementation-and-independent-claude-review). Codex owns implementation and validated corrections; Claude reviews independently. Review feedback cannot redefine canonical requirements or expand the current model-only scope into deferred workflows.
+
+D-27 extends Task 4 with guest browser sessions/scoped grants, booking recovery proof, sealed selections, payment-start reservations and upfront payment/outbox evidence. See the [checkout checkpoint](../docs/reviews/TASK4_CHECKOUT_MODELS_2026-10-04.md). These models do not enable session/API/provider workflows or finish the entire Task 4 matrix.
+
 Tasks 1–3 remain complete for their delivered scope. [D-26](../docs/DECISIONS.md#d-26--task-4-cross-app-model-completion) now scopes Task 4 to all agreed backend persistence, integrity, migrations and model/database tests; workflows/APIs/providers remain in later tasks. Use the [coverage matrix](../docs/DATA_MODEL.md#task-4-model-coverage). Original storefront 4.1–4.7 move to Task 5 without renumbering or removing evidence. Policy gates still apply; model completeness is not live readiness.
 
 Follow D-23–D-25 and R-33–R-38 for separate staff/customer identities, permanent unlinked guest checkout, historical ownership/snapshots and booking OTP before upfront payment. These are target requirements, not existing implemented flows; keep details canonical in root docs. Do not reset migration history for this scope update.

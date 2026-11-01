@@ -41,6 +41,9 @@ def change_publication(*, actor, page, publish: bool, reason):
     if not isinstance(reason, str) or not reason.strip():
         raise ValidationError("Record the reason for this content decision.")
     with transaction.atomic():
+        from common.serialization import lock_integrity_writes
+
+        lock_integrity_writes("default")
         lock_page_tree()
         locked = StorefrontPage.objects.select_for_update().get(pk=page.pk)
         target = StorefrontPage.Status.PUBLISHED if publish else StorefrontPage.Status.WITHDRAWN
@@ -95,6 +98,8 @@ def public_variants(market, material):
     ).filter(Q(purity__isnull=True) | Q(purity__status="ACTIVE"))
     if material is not None:
         variants = variants.filter(material=material)
+    # A hub-resident piece can already be committed to a guest/account checkout.
+    # Refs: BUSINESS_RULES.md R-09, R-14, R-40; DECISIONS.md D-27.
     available = InventoryUnit.objects.filter(
         variant_id=OuterRef("pk"),
         status="AVAILABLE",
@@ -102,7 +107,7 @@ def public_variants(market, material):
         hub__status="ACTIVE",
         hub__market_id=market.pk if market else None,
         hub__market__status="ACTIVE",
-    )
+    ).exclude(reservations__status__in=["HELD", "CAPTURE_PENDING", "COMMITTED"])
     return variants.select_related("material", "purity").annotate(at_hub=Exists(available))
 
 

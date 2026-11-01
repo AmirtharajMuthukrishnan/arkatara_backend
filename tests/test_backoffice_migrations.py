@@ -80,7 +80,7 @@ def test_task2_upgrade_preserves_draft_identity_without_invented_custody_or_hist
     # target must also remove those dependants rather than request their latest state.
     task2 = [
         (app, None)
-        if app in {"trials", "delivery"}
+        if app in {"trials", "delivery", "payments", "notifications", "billing"}
         else ("catalog", "0003_price_history_guard")
         if app == "catalog"
         else TASK2_INVENTORY

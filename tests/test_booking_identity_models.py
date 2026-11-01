@@ -24,6 +24,7 @@ from trials.models import (
     BookingPhoneChallenge,
     BookingPolicyAcceptance,
     GuestBookingAccessGrant,
+    GuestBrowserSession,
     TrialBooking,
     TrialBox,
 )
@@ -265,9 +266,12 @@ def test_policy_revision_and_guest_acceptance_preserve_content_without_customer_
 
 def test_guest_grant_is_scoped_and_revocation_is_irreversible(booking, booking_data):
     now = timezone.now()
+    session = GuestBrowserSession.objects.create(
+        token_digest="c" * 64, issued_at=now, expires_at=now + timedelta(minutes=10)
+    )
     grant = GuestBookingAccessGrant.objects.create(
         booking=booking,
-        token_digest="c" * 64,
+        browser_session=session,
         issued_at=now,
         expires_at=now + timedelta(minutes=10),
     )
@@ -278,7 +282,7 @@ def test_guest_grant_is_scoped_and_revocation_is_irreversible(booking, booking_d
     with pytest.raises(ValidationError):
         GuestBookingAccessGrant.objects.create(
             booking=owned,
-            token_digest="d" * 64,
+            browser_session=session,
             issued_at=now,
             expires_at=now + timedelta(minutes=10),
         )

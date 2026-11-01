@@ -32,6 +32,9 @@ class LegalEntityAdmin(admin.ModelAdmin):
         # Refs: BUSINESS_RULES.md R-30; DECISIONS.md BD-11.
         database = router.db_for_write(LegalEntity)
         with transaction.atomic(using=database):
+            from common.serialization import lock_integrity_writes
+
+            lock_integrity_writes(database)
             before = {}
             if change:
                 previous = LegalEntity.objects.using(database).select_for_update().get(pk=obj.pk)
@@ -86,6 +89,9 @@ class BusinessConfigurationAdmin(admin.ModelAdmin):
             raise PermissionDenied("Admin can only create draft configuration revisions.")
         database = router.db_for_write(BusinessConfiguration)
         with transaction.atomic(using=database):
+            from common.serialization import lock_integrity_writes
+
+            lock_integrity_writes(database)
             # Validation canonicalizes scope before assigning its next revision number.
             obj.clean()
             revisions = BusinessConfiguration.objects.using(database).filter(

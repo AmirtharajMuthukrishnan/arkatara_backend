@@ -14,7 +14,12 @@ _publication_write = ContextVar("storefront_publication_write", default=False)
 
 
 def lock_page_tree(database="default"):
-    # Serialize hierarchy edits before taking page row locks, preventing concurrent cycles.
+    from common.serialization import lock_integrity_writes
+
+    # All callers own an atomic transaction. Match checkout's outer latch order
+    # before serializing hierarchy edits or taking page row locks, including Admin POSTs.
+    # Refs: BUSINESS_RULES.md R-14, R-30; DECISIONS.md D-20, D-27.
+    lock_integrity_writes(database)
     with connections[database].cursor() as cursor:
         cursor.execute("SELECT pg_advisory_xact_lock(%s)", [674805010404])
 
@@ -182,6 +187,9 @@ class StorefrontPage(ValidatedReferenceModel):
             raise ValidationError({"status": "New storefront content must start as a draft."})
         database = kwargs.get("using") or router.db_for_write(type(self), instance=self)
         with transaction.atomic(using=database):
+            from common.serialization import lock_integrity_writes
+
+            lock_integrity_writes(database)
             lock_page_tree(database)
             return super().save(*args, **kwargs)
 

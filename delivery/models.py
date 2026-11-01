@@ -8,6 +8,8 @@ from django.db.models import F, Q
 from common.evidence import RetainedModel
 from common.verification import VerificationChallenge, validate_observed_at
 
+from .visits import HomeVisit, ReservationCustodyEvent, VisitEvidence  # noqa: F401
+
 
 class DeliveryAssignment(RetainedModel):
     """Retain who was responsible rather than overwriting an agent foreign key.

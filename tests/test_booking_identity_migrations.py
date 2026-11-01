@@ -31,6 +31,10 @@ def test_identity_upgrade_preserves_staff_and_audit_without_inventing_customers_
         "compliance": "0002_foundation_integrity",
         "trials": None,
         "delivery": None,
+        "payments": None,
+        "notifications": None,
+        "billing": None,
+        "inventory": "0004_operational_downgrade_guard",
     }
     previous = [(app, earlier.get(app, name)) for app, name in current]
     try:

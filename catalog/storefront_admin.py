@@ -50,12 +50,18 @@ class StorefrontPageAdmin(AuditedReferenceAdmin):
 
     def save_model(self, request, obj, form, change):
         with transaction.atomic():
+            from common.serialization import lock_integrity_writes
+
+            lock_integrity_writes("default")
             lock_page_tree()
             return super().save_model(request, obj, form, change)
 
     def _publication_action(self, request, queryset, publish):
         try:
             with transaction.atomic():
+                from common.serialization import lock_integrity_writes
+
+                lock_integrity_writes("default")
                 lock_page_tree()
                 for page in queryset.order_by("pk"):
                     change_publication(

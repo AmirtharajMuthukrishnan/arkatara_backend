@@ -59,6 +59,12 @@ class AuditedReferenceAdmin(admin.ModelAdmin):
             # older form cannot overwrite another administrator's newer edits.
             database = router.db_for_write(type(obj), instance=obj)
             if transaction.get_connection(database).in_atomic_block:
+                from common.serialization import lock_integrity_writes
+
+                # Checkout guards acquire this latch before catalogue row locks.
+                # Admin must use that order during its initial POST refresh too.
+                # Refs: BUSINESS_RULES.md R-14, R-40; DECISIONS.md D-27.
+                lock_integrity_writes(database)
                 return type(obj).objects.using(database).select_for_update().get(pk=obj.pk)
         return obj
 
@@ -81,6 +87,9 @@ class AuditedReferenceAdmin(admin.ModelAdmin):
             if not field.primary_key and field.name not in {"created_at", "updated_at"}
         )
         with transaction.atomic(using=database):
+            from common.serialization import lock_integrity_writes
+
+            lock_integrity_writes(database)
             before = {}
             if change:
                 previous = type(obj).objects.using(database).select_for_update().get(pk=obj.pk)

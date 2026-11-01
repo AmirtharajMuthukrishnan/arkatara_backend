@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import PurePath
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import connection, transaction
 from django.http import FileResponse
@@ -215,26 +216,40 @@ def upload_product_media(
     storage = get_media_storage()
     asset_id = uuid.uuid4()
     key = f"products/{product.public_id}/{asset_id}.{validated.extension}"
+    media = ProductMedia(
+        public_id=asset_id,
+        product=product,
+        role=role,
+        alt_text=alt_text,
+        sort_order=sort_order,
+        source_media=source_media,
+        storage_backend=storage.name,
+        object_key=key,
+        content_type=validated.content_type,
+        byte_size=len(validated.content),
+        sha256=validated.sha256,
+    )
+    media.full_clean()
     stored = False
     try:
+        # Private storage can be slow; it must not hold checkout's integrity latch.
+        # Metadata and attribution are revalidated together after storage succeeds.
+        # Refs: BUSINESS_RULES.md R-14, R-30; DECISIONS.md D-14, BD-15.
+        storage.put(key, validated.content)
+        stored = True
         with transaction.atomic():
+            from common.serialization import lock_integrity_writes
+
+            lock_integrity_writes("default")
+            actor = get_user_model().objects.select_for_update().get(pk=actor.pk)
+            _authorize(actor, "add")
             product = Product.objects.select_for_update().get(pk=product.pk)
-            media = ProductMedia(
-                public_id=asset_id,
-                product=product,
-                role=role,
-                alt_text=alt_text,
-                sort_order=sort_order,
-                source_media=source_media,
-                storage_backend=storage.name,
-                object_key=key,
-                content_type=validated.content_type,
-                byte_size=len(validated.content),
-                sha256=validated.sha256,
-            )
+            media.product = product
+            if source_media is not None:
+                media.source_media = ProductMedia.objects.select_for_update().get(
+                    pk=source_media.pk
+                )
             media.full_clean()
-            storage.put(key, validated.content)
-            stored = True
             media._service_write = True
             media.save()
             record_model_change(
@@ -259,6 +274,9 @@ def update_product_media_metadata(*, actor, media, alt_text, sort_order, status,
     _authorize(actor, "change")
     reason = _reason(reason)
     with transaction.atomic():
+        from common.serialization import lock_integrity_writes
+
+        lock_integrity_writes("default")
         media = ProductMedia.objects.select_for_update().get(pk=media.pk)
         before = model_facts(media, AUDITED_FIELDS)
         media.alt_text, media.sort_order, media.status = alt_text, sort_order, status
